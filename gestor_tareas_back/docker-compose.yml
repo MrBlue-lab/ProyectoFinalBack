@@ -1,0 +1,34 @@
+version: "3.7"
+ 
+services: 
+  mariadb:
+    container_name: mariadb
+    image: mariadb:latest
+    volumes:
+      - ./mariadb/data:/var/lib/mysql
+    environment: 
+      MYSQL_DATABASE: desafio3
+      MYSQL_USER: usuario
+      MYSQL_PASSWORD: Chubaca2020
+      MYSQL_ROOT_PASSWORD: Chubaca2020
+    ports:
+      - 3316:3306
+    networks:
+      - laravel
+        
+  api_laravel:
+    container_name: api_laravel
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./storage:/var/www/html/storage
+    ports:
+      - 8091:80
+    depends_on: 
+      - 'mariadb'
+    networks:
+      - laravel
+
+networks:
+  laravel:
