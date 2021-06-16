@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateRoleUser extends Migration
+class CreateRoleUserTable extends Migration
 {
     /**
      * Run the migrations.
@@ -15,25 +15,21 @@ class CreateRoleUser extends Migration
     {
         Schema::create('role_user', function (Blueprint $table) {
             $table->unsignedBigInteger('role_id');
-            $table->unsignedBigInteger('id_user');
+            $table->unsignedBigInteger('id_user')->unique();
             $table->timestamps();
 
             /*
              * Agregamos en esta tabla los “foreign constraint” para roles y usuarios
              */
-        });
-        /*
-        Schema::table('role_user', function($table){
+            $table->foreign('role_id')
+                    ->references('id')
+                    ->on('roles')
+                    ->onDelete('cascade');
             $table->foreign('id_user')
                     ->references('id')
                     ->on('users')
                     ->onDelete('cascade');
         });
-        Schema::table('role_user', function($table){
-            $table->foreign('role_id')
-                    ->references('id')
-                    ->on('roles');
-        });*/
     }
 
     /**

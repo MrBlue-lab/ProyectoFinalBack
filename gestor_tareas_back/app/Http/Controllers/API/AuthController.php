@@ -22,18 +22,16 @@ class AuthController extends Controller {
             'password' => 'required',
             'estado' => 'required'
         ]);
-
+        
         $validatedData['password'] = \Hash::make($request->input("password"));
-
         $user = User::create($validatedData);
-        $accessToken = $user->createToken('authToken')->accessToken;
         RolUsuario::create([
             'role_id' => 1,
-            'id' => $request->input("id")
+            'id_user' => $user['id']
         ]);
         
 
-        return response()->json(['message' => ['correcto' => true, 'user' => $user, 'access_token' => $accessToken], 'code' => 201], 201);
+        return response()->json(['message' => ['correcto' => true], 'code' => 201], 201);
     }
 
     /**
@@ -50,8 +48,9 @@ class AuthController extends Controller {
         $user->apellidos = $request->input("apellidos");
         $user->email = $request->input("email");
         $user->save();
+        $accessToken = $user->createToken('authToken')->accessToken;
         
-        return response()->json(['message' => ['user' => $user], 'code' => 201], 201);
+        return response()->json(['message' => ['correcto' => true, 'user' => $user, 'access_token' => $accessToken], 'code' => 201], 201);
     }
     /**
      * Función para cambiar contraseña
@@ -59,17 +58,16 @@ class AuthController extends Controller {
      * @return type
      */
     public function mod_user_pass(Request $request) {
-        $user = User::where('id', $request->input('id'))->get();
-
-        return response()->json(['message' => ['user' =>  $user->password], 'code' => 400], 400);
-        if (\Hash::check($request->input("password"), $user->password)) {
+        $user = User::where('id', $request->input('id'))->first();
+        if (!\Hash::check($request->input("password"), $user['password'])) {
             return response()->json(['message' => 'Contraseña incorrecta. Revise las credenciales.', 'code' => 400], 400);
         }
 
-        $user->password = \Hash::make($request->input("newpassword"));
+        $user['password'] = \Hash::make($request->input("newpassword"));
         $user->save();
+        $accessToken = $user->createToken('authToken')->accessToken;
 
-        return response()->json(['message' => ['user' => $user], 'code' => 201], 201);
+        return response()->json(['message' => ['correcto' => true, 'user' => $user, 'access_token' => $accessToken], 'code' => 201], 201);
     }
 
     public function login(Request $request) {
@@ -93,16 +91,30 @@ class AuthController extends Controller {
         $accessToken = auth()->user()->createToken('authToken')->accessToken;
 
         //Obtener el rol del usuario
-        /*
-        $rol = RolUsuario::where("id", "=", $user->id)->get();
+        
+        $rol = RolUsuario::where("id_user", "=", $usu[0]->id)->get();
     
         if ($rol[0]->role_id == 1) {
-            $rolDescripcion = "Director";
+            $rolDescripcion = "usuario";
         } else if ($rol[1]->role_id == 2) {
-            $rolDescripcion = "Jefe de estudios";
+            $rolDescripcion = "administrador";
         } else if ($rol[1]->role_id == 3) {
-            $rolDescripcion = "Tutor";
-        }*/
+            $rolDescripcion = "super";
+        }
         return response()->json(['message' => ['user' => auth()->user(), 'access_token' => $accessToken], 'code' => 200], 200);
     }
+    
+    public function cambiarFoto(Request $request, $id) {
+        $request->file('img')->storeAs('', $id . '.png', 'sergio');
+        //bd actualizar
+        $user = User::where('id', '=', $id)->get();
+
+        if (count($user) >= 1) {
+            $user[0]->foto = 1;
+            // Guardamos en base de datos
+            $user[0]->save();
+        }
+        return response()->json(['code' => 201, 'message' => $user[0]], 201);
+    }
+
 }

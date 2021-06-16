@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\TableroController;
 use App\Http\Controllers\CalendarioController;
+use App\Http\Controllers\FriendController;
 
 /*
   |--------------------------------------------------------------------------
@@ -24,10 +25,8 @@ Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
 
 Route::group(['middleware' => 'auth:api'], function () {
-    Route::post('getTableros', [TableroController::class, 'getTableros']);
-    Route::post('getTablero', [TableroController::class, 'getTablero']);
-    Route::post('setTableros', [TableroController::class, 'setTableros']);
-
+    //--------------------------------------------------------------------------
+    //-------------------------------------------------------Opciones de tarjeta
     Route::post('updateTarjetaCol', [TableroController::class, 'updateTarjetaCol']);
     Route::post('updateTarjetaPos', [TableroController::class, 'updateTarjetaPos']);
 
@@ -36,17 +35,42 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('getTarjetas', [TableroController::class, 'getTarjetas']);
     Route::post('getTarjetasDate', [CalendarioController::class, 'getTarjetasDate']);
     Route::post('getTarjetaDate', [CalendarioController::class, 'getTarjetaDate']);
+    //--------------------------------------------------------------------------
 
+    //--------------------------------------------------------------------------
+    //------------------------------------------------------opciones de tableros
+    Route::post('getTableros', [TableroController::class, 'getTableros']);
+    Route::post('getTablero', [TableroController::class, 'getTablero']);
+    Route::post('setTableros', [TableroController::class, 'setTableros']);
+    Route::post('dropTablero', [TableroController::class, 'dropTablero']);
+    Route::post('updateTableroNombre', [TableroController::class, 'updateTablero']);
+    
     Route::post('updateTarjeta', [TableroController::class, 'updateTarjeta']);
-    Route::post('addColumna', [TableroController::class, 'addColumna']);
-    Route::post('updateColumna', [TableroController::class, 'updateColumna']);
+    Route::post('dropTarjeta', [TableroController::class, 'dropTarjeta']);
+    
     Route::post('getColumna', [TableroController::class, 'getColumna']);
     Route::post('getColumnas', [TableroController::class, 'getColumnas']);
     Route::post('getColumnasfull', [TableroController::class, 'getColumnasfull']);
-    Route::post('dropTarjeta', [TableroController::class, 'dropTarjeta']);
+    Route::post('addColumna', [TableroController::class, 'addColumna']);
+    Route::post('updateColumna', [TableroController::class, 'updateColumna']);
     Route::post('dropColumna', [TableroController::class, 'dropColumna']);
-    Route::post('dropTablero', [TableroController::class, 'dropTablero']);
-    Route::post('updateTableroNombre', [TableroController::class, 'updateTablero']);
+    Route::post('getUsersTablero', [TableroController::class, 'getUsersTablero']);
+    Route::post('addUserTablero', [TableroController::class, 'addUserTablero']);
+    
+    //--------------------------------------------------------------------------
+    
+    //--------------------------------------------------------------------------
+    //------------------------------------------------Opciones usuarios añadidos
+    Route::post('getAllUsers', [FriendController::class, 'getAllUsers']);
+    Route::post('getUsersNotFriends', [FriendController::class, 'getUsersNotFriends']);
+    Route::post('getUsersAlmostFriends', [FriendController::class, 'getUsersAlmostFriends']);
+    Route::post('getUsersFriends', [FriendController::class, 'getUsersFriends']);
+    Route::put('putUserAmigo', [FriendController::class, 'putUserAmigo']);
+    //--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    //----------------------------------------------------------Opciones usuario
+    Route::post('mod_user', [AuthController::class, 'mod_user']);
+    Route::post('cambiarFoto/{id}', [AuthController::class, 'cambiarFoto']);
+    //--------------------------------------------------------------------------
 });
-Route::post('mod_user', [AuthController::class, 'mod_user']);
     Route::put('mod_user_pass', [AuthController::class, 'mod_user_pass']);

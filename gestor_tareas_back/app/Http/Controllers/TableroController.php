@@ -6,35 +6,25 @@ use Illuminate\Http\Request;
 use App\Models\Tablero;
 use App\Models\Tarjeta;
 use App\Models\Columna;
+use App\Models\TableroUser;
+use App\Models\User;
 
-class TableroController extends Controller {/**
-  public function getTableros(Request $request) {
-  $Tablero = Tablero::create([
-  'id_Creador' =>  $request->input('id_Creador'),
-  'nombre' =>  $request->input('nombre'),
-  'tipo' =>  $request->input('tipo'),
-  'descripcion' =>  $request->input('descripcion')
-  ]);
-  if (!$Tablero) {
-  return response()->json(['errors' => array(['code' => 404, 'message' => 'No se ha podido registrar el Tablero ' . $Tablero])], 404);
-  }
-  //Asignar alumno a curso
-  $Tablero->save();
-
-  return response()->json(['code' => 201, 'message' => 'Datos insertados correctamente', 'Tablero' => $Tablero], 201);
-  } */
+class TableroController extends Controller {
 
     public function getTableros(Request $request) {
-        $Tableros = Tablero::where('id_Creador', '=', $request->input('id_Creador'))
-                ->get();
-        return response()->json(['code' => 200, 'message' => $Tableros]);
+        $Tableros = TableroUser::where('id_user', '=', $request->input('id_Creador'))->where('aceptado', '>=', 1)->get();
+        $salida=null;
+        foreach ($Tableros as $Tablero) {
+            $salida[] = Tablero::where('id', '=', $Tablero->id_tablero)->first();
+        }
+        return response()->json(['code' => 200, 'message' => $salida]);
     }
 
     public function getTablero(Request $request) {
-        $Tablero = Tablero::where('id_Creador', '=', $request->input('id_Creador'))
-                ->where('id', '=', $request->input('id'))
-                ->get();
-        return response()->json(['code' => 200, 'message' => ['tablero' => $Tablero]]);
+        $Tableros = TableroUser::where('id_user', '=', $request->input('id_Creador'))->where('id_tablero', '=', $request->input('id'))->where('aceptado', '>=', 1)->first();
+        $salida = null;
+        $salida = Tablero::where('id', '=', $Tableros->id_tablero)->first();
+        return response()->json(['code' => 200, 'message' => ['tablero' => $salida]]);
     }
 
     public function setTableros(Request $request) {
@@ -61,9 +51,44 @@ class TableroController extends Controller {/**
             }
         }
         if (Tablero::where('id_Creador', '=', $request->input('id_Creador'))->count() >= 1) {
+            TableroUser::create([
+                'id_user' => $request->input("id_Creador"),
+                'id_tablero' => $Tablero->id,
+                'aceptado' => 3
+            ]);
             return response()->json(['code' => 200, 'message' => $Tablero]);
         }
         return response()->json(['message' => 'error ya existe el Tablero', 'code' => 201], 201);
+    }
+
+    public function addUserTablero(Request $request) {
+        $Tablero = Tablero::where('id', '=', $request->input('id_tablero'))->first();
+        $user = User::where('email', '=', $request->input('email'))->first();
+        if ($Tablero != null) {
+            TableroUser::create([
+                'id_user' => $user->id,
+                'id_tablero' => $Tablero->id,
+                'aceptado' => 1
+            ]);
+            return response()->json(['code' => 200, 'message' => $Tablero]);
+        }
+        return response()->json(['message' => 'error ya esta el usuario en el tablero', 'code' => 201], 201);
+    }
+
+    public function getUsersTablero(Request $request) {
+        $idUsers = TableroUser::where('id_tablero', '=', $request->input('id_Tablero'))->get('id_user');
+        foreach ($idUsers as $idUser) {
+            $user = User::where('id', '=', $idUser->id_user)->first();
+            if ($user != null) {
+                if ($user->foto == 0) {
+                    $user->foto = "http://localhost:8000/IMG/generico.jpg";
+                } else {
+                    $user->foto = "http://localhost:8000/IMG/" . $user->id . ".png";
+                }
+                $users[] = $user;
+            }
+        }
+        return response()->json(['code' => 200, 'message' => ['users' => $users]]);
     }
 
     public function updateTarjetaCol(Request $request) {
@@ -327,4 +352,5 @@ class TableroController extends Controller {/**
         }
         return response()->json(['message' => 'error en la actualizacion del tablero', 'code' => 201], 201);
     }
+
 }
